@@ -8,7 +8,6 @@
     using MemeFolder.Data.Models;
     using MemeFolder.Data.Repositories;
     using MemeFolder.Data.Seeding;
-    using MemeFolder.Services.Data;
     using MemeFolder.Services.Mapping;
     using MemeFolder.Services.Messaging;
     using MemeFolder.Web.ViewModels;
@@ -64,7 +63,6 @@
 
             // Application services
             services.AddTransient<IEmailSender, NullMessageSender>();
-            services.AddTransient<ISettingsService, SettingsService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

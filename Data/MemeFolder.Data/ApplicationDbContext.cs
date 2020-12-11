@@ -11,6 +11,7 @@
 
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
+    using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
@@ -24,7 +25,19 @@
         {
         }
 
-        public DbSet<Setting> Settings { get; set; }
+        public DbSet<Collection> Collections { get; set; }
+
+        public DbSet<Comment> Comments { get; set; }
+
+        public DbSet<Like> Likes { get; set; }
+
+        public DbSet<MediaFile> MediaFiles { get; set; }
+
+        public DbSet<Post> Posts { get; set; }
+
+        public DbSet<Tag> Tags { get; set; }
+
+        public DbSet<Relationship> Relationships { get; set; }
 
         public override int SaveChanges() => this.SaveChanges(true);
 
@@ -47,6 +60,14 @@
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
+            builder.Entity<Relationship>().HasOne(f => f.FirstUser).WithMany().HasForeignKey(f => f.FirstUserId);
+
+            builder.Entity<Relationship>().HasOne(f => f.SecondUser).WithMany().HasForeignKey(f => f.SecondUserId);
+
+            builder.Entity<ApplicationUser>().HasMany(x => x.Following).WithMany(y => y.Followers).UsingEntity(x => x.ToTable("Follows"));
+
+            builder.Entity<Collection>().HasOne(x => x.Creator).WithMany(x => x.Collections).HasForeignKey(x => x.Id);
+
             // Needed for Identity models configuration
             base.OnModelCreating(builder);
 

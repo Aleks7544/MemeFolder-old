@@ -23,4 +23,8 @@
     <ProjectReference Include="..\..\Services\MemeFolder.Services.Mapping\MemeFolder.Services.Mapping.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Settings\" />
+  </ItemGroup>
+
 </Project>

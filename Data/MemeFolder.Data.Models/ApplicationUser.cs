@@ -3,6 +3,7 @@ namespace MemeFolder.Data.Models
 {
     using System;
     using System.Collections.Generic;
+    using System.ComponentModel.DataAnnotations.Schema;
 
     using MemeFolder.Data.Common.Models;
 
@@ -16,6 +17,10 @@ namespace MemeFolder.Data.Models
             this.Roles = new HashSet<IdentityUserRole<string>>();
             this.Claims = new HashSet<IdentityUserClaim<string>>();
             this.Logins = new HashSet<IdentityUserLogin<string>>();
+            this.Relationships = new HashSet<Relationship>();
+            this.Followers = new HashSet<ApplicationUser>();
+            this.Following = new HashSet<ApplicationUser>();
+            this.Collections = new List<Collection>();
         }
 
         // Audit info
@@ -27,6 +32,20 @@ namespace MemeFolder.Data.Models
         public bool IsDeleted { get; set; }
 
         public DateTime? DeletedOn { get; set; }
+
+        public string ProfitPicturePath { get; set; }
+
+        public string BackgroundPicturePath { get; set; }
+
+        public string Status { get; set; }
+
+        public virtual ICollection<Relationship> Relationships { get; set; }
+
+        public virtual ICollection<ApplicationUser> Followers { get; set; }
+
+        public virtual ICollection<ApplicationUser> Following { get; set; }
+
+        public virtual ICollection<Collection> Collections { get; set; }
 
         public virtual ICollection<IdentityUserRole<string>> Roles { get; set; }
 
