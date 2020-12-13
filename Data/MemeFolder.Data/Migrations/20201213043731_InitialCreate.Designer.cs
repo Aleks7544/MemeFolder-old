@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MemeFolder.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20201211073516_InitialCreate")]
+    [Migration("20201213043731_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,28 +38,31 @@ namespace MemeFolder.Data.Migrations
 
             modelBuilder.Entity("CommentMediaFile", b =>
                 {
-                    b.Property<int>("CommentsId")
-                        .HasColumnType("int");
-
                     b.Property<string>("MediaId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("CommentsId", "MediaId");
+                    b.Property<string>("CommentsUserId")
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasIndex("MediaId");
+                    b.Property<string>("CommentsPostId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("MediaId", "CommentsUserId", "CommentsPostId");
+
+                    b.HasIndex("CommentsUserId", "CommentsPostId");
 
                     b.ToTable("CommentMediaFile");
                 });
 
             modelBuilder.Entity("MediaFilePost", b =>
                 {
-                    b.Property<string>("MediaId")
+                    b.Property<string>("MediaFilesId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PostsId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.HasKey("MediaId", "PostsId");
+                    b.HasKey("MediaFilesId", "PostsId");
 
                     b.HasIndex("PostsId");
 
@@ -209,7 +212,7 @@ namespace MemeFolder.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("CreatorId")
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime?>("DeletedOn")
                         .HasColumnType("datetime2");
@@ -226,7 +229,12 @@ namespace MemeFolder.Data.Migrations
                     b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Visibility")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("CreatorId");
 
                     b.HasIndex("IsDeleted");
 
@@ -235,22 +243,8 @@ namespace MemeFolder.Data.Migrations
 
             modelBuilder.Entity("MemeFolder.Data.Models.Comment", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("DeletedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<bool>("IsDeleted")
-                        .HasColumnType("bit");
-
-                    b.Property<DateTime?>("ModifiedOn")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PostId")
                         .HasColumnType("nvarchar(450)");
@@ -258,32 +252,17 @@ namespace MemeFolder.Data.Migrations
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("IsDeleted");
+                    b.HasKey("UserId", "PostId");
 
                     b.HasIndex("PostId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
 
             modelBuilder.Entity("MemeFolder.Data.Models.Like", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
-                    b.Property<DateTime?>("ModifiedOn")
-                        .HasColumnType("datetime2");
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("PostId")
                         .HasColumnType("nvarchar(450)");
@@ -291,14 +270,9 @@ namespace MemeFolder.Data.Migrations
                     b.Property<int>("Reaction")
                         .HasColumnType("int");
 
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
+                    b.HasKey("UserId", "PostId");
 
                     b.HasIndex("PostId");
-
-                    b.HasIndex("UserId");
 
                     b.ToTable("Likes");
                 });
@@ -369,6 +343,9 @@ namespace MemeFolder.Data.Migrations
                     b.Property<string>("Text")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Visibility")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CollectionId");
@@ -382,34 +359,21 @@ namespace MemeFolder.Data.Migrations
 
             modelBuilder.Entity("MemeFolder.Data.Models.Relationship", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .UseIdentityColumn();
-
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime>("CreatedOn")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("FirstUserId")
                         .HasColumnType("nvarchar(450)");
 
-                    b.Property<DateTime?>("ModifiedOn")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("SecondUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ApplicationUserId")
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
 
-                    b.HasKey("Id");
+                    b.HasKey("FirstUserId", "SecondUserId");
 
                     b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("FirstUserId");
 
                     b.HasIndex("SecondUserId");
 
@@ -437,9 +401,6 @@ namespace MemeFolder.Data.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("VectorImagePath")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -585,15 +546,15 @@ namespace MemeFolder.Data.Migrations
 
             modelBuilder.Entity("CommentMediaFile", b =>
                 {
-                    b.HasOne("MemeFolder.Data.Models.Comment", null)
-                        .WithMany()
-                        .HasForeignKey("CommentsId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("MemeFolder.Data.Models.MediaFile", null)
                         .WithMany()
                         .HasForeignKey("MediaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MemeFolder.Data.Models.Comment", null)
+                        .WithMany()
+                        .HasForeignKey("CommentsUserId", "CommentsPostId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
                 });
@@ -602,7 +563,7 @@ namespace MemeFolder.Data.Migrations
                 {
                     b.HasOne("MemeFolder.Data.Models.MediaFile", null)
                         .WithMany()
-                        .HasForeignKey("MediaId")
+                        .HasForeignKey("MediaFilesId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -624,9 +585,7 @@ namespace MemeFolder.Data.Migrations
                 {
                     b.HasOne("MemeFolder.Data.Models.ApplicationUser", "Creator")
                         .WithMany("Collections")
-                        .HasForeignKey("Id")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .HasForeignKey("CreatorId");
 
                     b.Navigation("Creator");
                 });
@@ -635,11 +594,15 @@ namespace MemeFolder.Data.Migrations
                 {
                     b.HasOne("MemeFolder.Data.Models.Post", "Post")
                         .WithMany("Comments")
-                        .HasForeignKey("PostId");
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("MemeFolder.Data.Models.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Post");
 
@@ -650,11 +613,15 @@ namespace MemeFolder.Data.Migrations
                 {
                     b.HasOne("MemeFolder.Data.Models.Post", "Post")
                         .WithMany("Likes")
-                        .HasForeignKey("PostId");
+                        .HasForeignKey("PostId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("MemeFolder.Data.Models.ApplicationUser", "User")
                         .WithMany()
-                        .HasForeignKey("UserId");
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("Post");
 
@@ -699,11 +666,15 @@ namespace MemeFolder.Data.Migrations
 
                     b.HasOne("MemeFolder.Data.Models.ApplicationUser", "FirstUser")
                         .WithMany()
-                        .HasForeignKey("FirstUserId");
+                        .HasForeignKey("FirstUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("MemeFolder.Data.Models.ApplicationUser", "SecondUser")
                         .WithMany()
-                        .HasForeignKey("SecondUserId");
+                        .HasForeignKey("SecondUserId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.Navigation("FirstUser");
 

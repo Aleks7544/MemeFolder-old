@@ -11,7 +11,6 @@
 
     using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser, ApplicationRole, string>
     {
@@ -60,13 +59,19 @@
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
-            builder.Entity<Relationship>().HasOne(f => f.FirstUser).WithMany().HasForeignKey(f => f.FirstUserId);
+            builder.Entity<Like>().HasKey(k => new { k.UserId, k.PostId });
 
-            builder.Entity<Relationship>().HasOne(f => f.SecondUser).WithMany().HasForeignKey(f => f.SecondUserId);
+            builder.Entity<Comment>().HasKey(k => new { k.UserId, k.PostId });
+
+            builder.Entity<Relationship>().HasKey(k => new { k.FirstUserId, k.SecondUserId });
+
+            builder.Entity<Relationship>().HasOne(u => u.FirstUser).WithMany();
+
+            builder.Entity<Relationship>().HasOne(u => u.SecondUser).WithMany();
+
+            builder.Entity<ApplicationUser>().HasMany(c => c.Collections).WithOne(c => c.Creator);
 
             builder.Entity<ApplicationUser>().HasMany(x => x.Following).WithMany(y => y.Followers).UsingEntity(x => x.ToTable("Follows"));
-
-            builder.Entity<Collection>().HasOne(x => x.Creator).WithMany(x => x.Collections).HasForeignKey(x => x.Id);
 
             // Needed for Identity models configuration
             base.OnModelCreating(builder);

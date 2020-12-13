@@ -4,6 +4,7 @@
     using System.Collections.Generic;
 
     using MemeFolder.Data.Common.Models;
+    using MemeFolder.Data.Models.Enums;
 
     public class Collection : BaseDeletableModel<string>
     {
@@ -18,6 +19,8 @@
         public string Name { get; set; }
 
         public string Description { get; set; }
+
+        public Visibility Visibility { get; set; }
 
         public string CreatorId { get; set; }
 

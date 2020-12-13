@@ -32,7 +32,6 @@ namespace MemeFolder.Data.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Color = table.Column<int>(type: "int", nullable: false),
-                    VectorImagePath = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
@@ -132,7 +131,8 @@ namespace MemeFolder.Data.Migrations
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Name = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Description = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatorId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Visibility = table.Column<int>(type: "int", nullable: false),
+                    CreatorId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ModifiedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
                     IsDeleted = table.Column<bool>(type: "bit", nullable: false),
@@ -249,6 +249,7 @@ namespace MemeFolder.Data.Migrations
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PosterId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    Visibility = table.Column<int>(type: "int", nullable: false),
                     Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     CollectionId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
@@ -277,18 +278,14 @@ namespace MemeFolder.Data.Migrations
                 name: "Relationships",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    FirstUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    SecondUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    FirstUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    SecondUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Status = table.Column<int>(type: "int", nullable: false),
-                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Relationships", x => x.Id);
+                    table.PrimaryKey("PK_Relationships", x => new { x.FirstUserId, x.SecondUserId });
                     table.ForeignKey(
                         name: "FK_Relationships_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
@@ -313,19 +310,13 @@ namespace MemeFolder.Data.Migrations
                 name: "Comments",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PostId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Text = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedOn = table.Column<DateTime>(type: "datetime2", nullable: true),
-                    IsDeleted = table.Column<bool>(type: "bit", nullable: false),
-                    DeletedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    PostId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Text = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Comments", x => x.Id);
+                    table.PrimaryKey("PK_Comments", x => new { x.UserId, x.PostId });
                     table.ForeignKey(
                         name: "FK_Comments_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -344,17 +335,13 @@ namespace MemeFolder.Data.Migrations
                 name: "Likes",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    PostId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Reaction = table.Column<int>(type: "int", nullable: false),
-                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    ModifiedOn = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    PostId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Reaction = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Likes", x => x.Id);
+                    table.PrimaryKey("PK_Likes", x => new { x.UserId, x.PostId });
                     table.ForeignKey(
                         name: "FK_Likes_AspNetUsers_UserId",
                         column: x => x.UserId,
@@ -373,15 +360,15 @@ namespace MemeFolder.Data.Migrations
                 name: "MediaFilePost",
                 columns: table => new
                 {
-                    MediaId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    MediaFilesId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     PostsId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_MediaFilePost", x => new { x.MediaId, x.PostsId });
+                    table.PrimaryKey("PK_MediaFilePost", x => new { x.MediaFilesId, x.PostsId });
                     table.ForeignKey(
-                        name: "FK_MediaFilePost_MediaFiles_MediaId",
-                        column: x => x.MediaId,
+                        name: "FK_MediaFilePost_MediaFiles_MediaFilesId",
+                        column: x => x.MediaFilesId,
                         principalTable: "MediaFiles",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
@@ -421,17 +408,18 @@ namespace MemeFolder.Data.Migrations
                 name: "CommentMediaFile",
                 columns: table => new
                 {
-                    CommentsId = table.Column<int>(type: "int", nullable: false),
-                    MediaId = table.Column<string>(type: "nvarchar(450)", nullable: false)
+                    MediaId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CommentsUserId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    CommentsPostId = table.Column<string>(type: "nvarchar(450)", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_CommentMediaFile", x => new { x.CommentsId, x.MediaId });
+                    table.PrimaryKey("PK_CommentMediaFile", x => new { x.MediaId, x.CommentsUserId, x.CommentsPostId });
                     table.ForeignKey(
-                        name: "FK_CommentMediaFile_Comments_CommentsId",
-                        column: x => x.CommentsId,
+                        name: "FK_CommentMediaFile_Comments_CommentsUserId_CommentsPostId",
+                        columns: x => new { x.CommentsUserId, x.CommentsPostId },
                         principalTable: "Comments",
-                        principalColumn: "Id",
+                        principalColumns: new[] { "UserId", "PostId" },
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_CommentMediaFile_MediaFiles_MediaId",
@@ -496,29 +484,24 @@ namespace MemeFolder.Data.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Collections_CreatorId",
+                table: "Collections",
+                column: "CreatorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Collections_IsDeleted",
                 table: "Collections",
                 column: "IsDeleted");
 
             migrationBuilder.CreateIndex(
-                name: "IX_CommentMediaFile_MediaId",
+                name: "IX_CommentMediaFile_CommentsUserId_CommentsPostId",
                 table: "CommentMediaFile",
-                column: "MediaId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Comments_IsDeleted",
-                table: "Comments",
-                column: "IsDeleted");
+                columns: new[] { "CommentsUserId", "CommentsPostId" });
 
             migrationBuilder.CreateIndex(
                 name: "IX_Comments_PostId",
                 table: "Comments",
                 column: "PostId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Comments_UserId",
-                table: "Comments",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Follows_FollowingId",
@@ -529,11 +512,6 @@ namespace MemeFolder.Data.Migrations
                 name: "IX_Likes_PostId",
                 table: "Likes",
                 column: "PostId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Likes_UserId",
-                table: "Likes",
-                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_MediaFilePost_PostsId",
@@ -581,11 +559,6 @@ namespace MemeFolder.Data.Migrations
                 column: "ApplicationUserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Relationships_FirstUserId",
-                table: "Relationships",
-                column: "FirstUserId");
-
-            migrationBuilder.CreateIndex(
                 name: "IX_Relationships_SecondUserId",
                 table: "Relationships",
                 column: "SecondUserId");
@@ -628,9 +601,9 @@ namespace MemeFolder.Data.Migrations
                 onDelete: ReferentialAction.Restrict);
 
             migrationBuilder.AddForeignKey(
-                name: "FK_Collections_AspNetUsers_Id",
+                name: "FK_Collections_AspNetUsers_CreatorId",
                 table: "Collections",
-                column: "Id",
+                column: "CreatorId",
                 principalTable: "AspNetUsers",
                 principalColumn: "Id",
                 onDelete: ReferentialAction.Restrict);
@@ -639,7 +612,7 @@ namespace MemeFolder.Data.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "FK_Collections_AspNetUsers_Id",
+                name: "FK_Collections_AspNetUsers_CreatorId",
                 table: "Collections");
 
             migrationBuilder.DropTable(

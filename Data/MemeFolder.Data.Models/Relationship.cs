@@ -1,9 +1,8 @@
 ﻿namespace MemeFolder.Data.Models
 {
-    using MemeFolder.Data.Common.Models;
     using MemeFolder.Data.Models.Enums;
 
-    public class Relationship : BaseModel<int>
+    public class Relationship
     {
         public string FirstUserId { get; set; }
 

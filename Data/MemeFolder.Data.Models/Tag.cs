@@ -5,7 +5,7 @@
 
     using MemeFolder.Data.Common.Models;
 
-    public class Tag : BaseDeletableModel<string>
+    public class Tag : BaseModel<string>
     {
         public Tag()
         {
@@ -17,8 +17,6 @@
         public string Name { get; set; }
 
         public int Color { get; set; }
-
-        public string VectorImagePath { get; set; }
 
         public virtual ICollection<MediaFile> Files { get; set; }
 

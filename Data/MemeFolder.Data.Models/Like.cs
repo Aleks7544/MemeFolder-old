@@ -1,9 +1,8 @@
 ﻿namespace MemeFolder.Data.Models
 {
-    using MemeFolder.Data.Common.Models;
     using MemeFolder.Data.Models.Enums;
 
-    public class Like : BaseModel<int>
+    public class Like
     {
         public string PostId { get; set; }
 
