@@ -13,7 +13,7 @@
 
         Task RepostPostAsync(RepostPostInputModel input, string userId);
 
-        Task EditPostAsync(EditPostInputModel input);
+        Task EditPostAsync(string id, EditPostInputModel input);
 
         IEnumerable<T> GetAllPopularPost<T>(int page, int itemsPerPage = 25);
 

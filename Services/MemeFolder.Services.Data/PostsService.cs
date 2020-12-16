@@ -2,6 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -9,10 +10,11 @@
     using MemeFolder.Data.Models;
     using MemeFolder.Data.Models.Enums;
     using MemeFolder.Web.ViewModels.Posts;
-    using Microsoft.EntityFrameworkCore;
+    using MemeFolder.Web.ViewModels.MediaFiles;
 
     public class PostsService : IPostsService
     {
+        private readonly string[] allowedExtensions = new[] { "jpg", "png", "gif", "jpeg", "mp4", "mp3", "wav", "ogg", "mp4" };
         private readonly IDeletableEntityRepository<Post> postsRepository;
         private readonly IRepository<Tag> tagsRepository;
 
@@ -28,8 +30,18 @@
             this.mediaFilesService = mediaFilesService;
         }
 
-        public async Task CreateAsync(CreatePostInputModel input, string userId)
+        public async Task CreateAsync(CreatePostInputModel input, string userId, string rootPath)
         {
+            foreach (var inputMediaFile in input.MediaFiles)
+            {
+                string extension = Path.GetExtension(inputMediaFile.FileName).TrimStart('.');
+
+                if (!this.allowedExtensions.Any(x => extension.EndsWith(x)))
+                {
+                    throw new Exception($"Invalid or unsupported file extension {extension}");
+                }
+            }
+
             var post = new Post
             {
                 CreatedOn = DateTime.UtcNow,
@@ -41,10 +53,20 @@
                 Tag tag = this.tagsRepository.All().FirstOrDefault(x => x.Id == tagModel.Id) ?? this.tagsService.CreateTagAsync(tagModel, userId).GetAwaiter().GetResult();
 
                 post.Tags.Add(tag);
+                tag.Posts.Add(post);
             }
 
-            foreach (var mediaFile in input.MediaFiles)
+            foreach (var mediaFileInput in input.MediaFiles)
             {
+                CreateMediaFileInputModel mediaFileInputModel = new CreateMediaFileInputModel
+                {
+                    Extension = Path.GetExtension(mediaFileInput.FileName).TrimStart('.'),
+                    RootPath = rootPath,
+                    MediaFile = mediaFileInput,
+                };
+
+                MediaFile mediaFile = this.mediaFilesService.CreateMediaFile(mediaFileInputModel, userId).GetAwaiter().GetResult();
+
                 post.MediaFiles.Add(mediaFile);
 
                 await this.mediaFilesService.AddPostToMediaFile(mediaFile, post);
@@ -55,12 +77,21 @@
                 }
             }
 
+            await this.postsRepository.AddAsync(post);
             await this.postsRepository.SaveChangesAsync();
         }
 
-        public Task EditAsync(EditPostInputModel input)
+        public async Task EditAsync(string id, EditPostInputModel input)
         {
-            throw new System.NotImplementedException();
+            Post post = this.postsRepository.All().FirstOrDefault(x => x.Id == id);
+
+            post.Visibility = input.Visibility;
+            post.Text = input.Text;
+
+            if (post.)
+            {
+                
+            }
         }
 
         public IEnumerable<T> GetAllPopular<T>(int page, int itemsPerPage = 25)

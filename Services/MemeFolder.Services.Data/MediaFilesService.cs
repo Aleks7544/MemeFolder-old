@@ -1,9 +1,12 @@
 ﻿namespace MemeFolder.Services.Data
 {
+    using System;
+    using System.IO;
     using System.Threading.Tasks;
 
     using MemeFolder.Data.Common.Repositories;
     using MemeFolder.Data.Models;
+    using MemeFolder.Web.ViewModels.MediaFiles;
 
     public class MediaFilesService : IMediaFilesService
     {
@@ -19,6 +22,29 @@
             mediaFile.Posts.Add(post);
 
             await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
+        public async Task<MediaFile> CreateMediaFile(CreateMediaFileInputModel input, string userId)
+        {
+            string directory = $"{input.RootPath}/mediaFiles/{userId}";
+
+            Directory.CreateDirectory(directory);
+
+            MediaFile mediaFile = new MediaFile
+            {
+                Extension = input.Extension,
+                UploaderId = userId,
+                CreatedOn = DateTime.UtcNow,
+            };
+            mediaFile.FilePath = $"{directory}/{mediaFile.Id}.{input.Extension}";
+
+            await using Stream fileStream = new FileStream(mediaFile.FilePath, FileMode.Create);
+            await input.MediaFile.CopyToAsync(fileStream);
+
+            await this.mediaFilesRepository.AddAsync(mediaFile);
+            await this.mediaFilesRepository.SaveChangesAsync();
+
+            return mediaFile;
         }
     }
 }

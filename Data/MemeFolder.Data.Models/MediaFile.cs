@@ -19,8 +19,6 @@
 
         public string FilePath { get; set; }
 
-        public FileType Type { get; set; }
-
         public string UploaderId { get; set; }
 
         public ApplicationUser Uploader { get; set; }
