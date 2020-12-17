@@ -61,8 +61,6 @@
         {
             builder.Entity<Like>().HasKey(k => new { k.UserId, k.PostId });
 
-            builder.Entity<Comment>().HasKey(k => new { k.UserId, k.PostId });
-
             builder.Entity<Relationship>().HasKey(k => new { k.FirstUserId, k.SecondUserId });
 
             builder.Entity<Relationship>().HasOne(u => u.FirstUser).WithMany();

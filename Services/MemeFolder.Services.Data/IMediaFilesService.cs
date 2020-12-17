@@ -9,6 +9,8 @@
     {
         Task AddPostToMediaFile(MediaFile mediaFile, Post post);
 
+        Task AddCommentToMediaFile(MediaFile mediaFile, Comment comment);
+
         Task<MediaFile> CreateMediaFile(CreateMediaFileInputModel input, string userId);
     }
 }

@@ -1,11 +1,15 @@
 ﻿namespace MemeFolder.Data.Models
 {
+    using System;
     using System.Collections.Generic;
+    
+    using MemeFolder.Data.Common.Models;
 
-    public class Comment
+    public class Comment : BaseDeletableModel<string>
     {
         public Comment()
         {
+            this.Id = Guid.NewGuid().ToString();
             this.Media = new List<MediaFile>();
             this.Likes = new List<Like>();
         }

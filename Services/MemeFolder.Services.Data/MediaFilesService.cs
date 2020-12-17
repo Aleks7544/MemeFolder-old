@@ -17,6 +17,13 @@
             this.mediaFilesRepository = mediaFilesRepository;
         }
 
+        public async Task AddCommentToMediaFile(MediaFile mediaFile, Comment comment)
+        {
+            mediaFile.Comments.Add(comment);
+
+            await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
         public async Task AddPostToMediaFile(MediaFile mediaFile, Post post)
         {
             mediaFile.Posts.Add(post);

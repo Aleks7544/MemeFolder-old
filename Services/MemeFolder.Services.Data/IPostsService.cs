@@ -6,16 +6,17 @@
     using MemeFolder.Data.Models;
     using MemeFolder.Data.Models.Enums;
     using MemeFolder.Web.ViewModels.Posts;
+    using MemeFolder.Web.ViewModels.Tags;
     using Microsoft.AspNetCore.Http;
-    using Web.ViewModels.Tags;
+    using Web.ViewModels.Comments;
 
     public interface IPostsService
     {
-        Task CreatePostAsync(CreatePostInputModel input, string userId);
+        Task<string> CreatePostAsync(CreatePostInputModel input, string userId, string rootPath);
 
-        Task RepostPostAsync(RepostPostInputModel input, string userId);
+        Task<string> RepostPostAsync(CreatePostInputModel input, string userId, string postId, string rootPath);
 
-        Task EditPostAsync(string id, EditPostInputModel input);
+        Task<string> EditPostAsync(string id, EditPostInputModel input, string rootPath);
 
         IEnumerable<T> GetAllPopularPost<T>(int page, int itemsPerPage = 25);
 
@@ -25,12 +26,12 @@
 
         Task LikePost(string id, string userId, ReactionType reaction);
 
-        Task PostComment(CreateCommentInput input, string id, string userId);
+        Task UpdateLike(string id, string userId, ReactionType reaction);
 
-        Task AddFollower(string id, string userId);
+        Task PostComment(CreateCommentInputModel input, string id, string userId);
 
-        Task AddMediaFiles(IEnumerable<IFormFile> mediaFiles, string userId, string rootPath, Post post);
+        Task AddMediaFilesToPost(IEnumerable<IFormFile> mediaFiles, string userId, string rootPath, Post post);
 
-        void AddTags(IEnumerable<CreateTagInputModel> tags, Post post);
+        void AddTagsToPost(IEnumerable<CreateTagInputModel> tags, Post post);
     }
 }
