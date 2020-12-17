@@ -1,5 +1,7 @@
 ﻿namespace MemeFolder.Data.Models
 {
+    using System;
+
     using MemeFolder.Data.Models.Enums;
 
     public class Like
@@ -13,5 +15,7 @@
         public ApplicationUser User { get; set; }
 
         public ReactionType Reaction { get; set; }
+
+        public DateTime CreatedOn { get; set; }
     }
 }

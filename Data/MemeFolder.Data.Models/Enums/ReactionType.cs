@@ -2,6 +2,7 @@
 {
     public enum ReactionType
     {
+        None = 0,
         Like = 1,
         Heart = 2,
         InLove = 3,

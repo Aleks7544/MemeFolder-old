@@ -30,7 +30,7 @@
             await this.tagsRepository.SaveChangesAsync();
         }
 
-        public async Task<Tag> CreateTagAsync(CreateTagInputModel input, string userId)
+        public async Task<Tag> CreateTagAsync(CreateTagInputModel input)
         {
             Tag tag = new Tag
             {

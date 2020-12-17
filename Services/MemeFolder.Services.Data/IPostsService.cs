@@ -6,6 +6,8 @@
     using MemeFolder.Data.Models;
     using MemeFolder.Data.Models.Enums;
     using MemeFolder.Web.ViewModels.Posts;
+    using Microsoft.AspNetCore.Http;
+    using Web.ViewModels.Tags;
 
     public interface IPostsService
     {
@@ -27,6 +29,8 @@
 
         Task AddFollower(string id, string userId);
 
-        Task AddTag(string id, string tagName);
+        Task AddMediaFiles(IEnumerable<IFormFile> mediaFiles, string userId, string rootPath, Post post);
+
+        void AddTags(IEnumerable<CreateTagInputModel> tags, Post post);
     }
 }

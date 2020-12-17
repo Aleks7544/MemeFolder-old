@@ -7,7 +7,7 @@
 
     public interface ITagsService
     {
-        Task<Tag> CreateTagAsync(CreateTagInputModel input, string userId);
+        Task<Tag> CreateTagAsync(CreateTagInputModel input);
 
         Task AddTagToPost(Tag tag, Post post);
 
