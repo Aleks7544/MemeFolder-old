@@ -11,7 +11,7 @@
         public Collection()
         {
             this.Id = Guid.NewGuid().ToString();
-            this.Files = new List<MediaFile>();
+            this.MediaFiles = new List<MediaFile>();
             this.Posts = new List<Post>();
             this.Followers = new HashSet<ApplicationUser>();
         }
@@ -26,7 +26,7 @@
 
         public ApplicationUser Creator { get; set; }
 
-        public virtual ICollection<MediaFile> Files { get; set; }
+        public virtual ICollection<MediaFile> MediaFiles { get; set; }
 
         public virtual ICollection<Post> Posts { get; set; }
 

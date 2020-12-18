@@ -56,13 +56,20 @@
             await this.mediaFilesRepository.SaveChangesAsync();
         }
 
+        public async Task AddCollectionToMediaFile(MediaFile mediaFile, Collection collection)
+        {
+            mediaFile.Collections.Add(collection);
+
+            await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
         public async Task RemoveCommentFromMediaFile(string mediaFileId, Comment comment)
         {
             MediaFile mediaFile = this.GetById<MediaFile>(mediaFileId);
 
             mediaFile.Comments.Remove(comment);
 
-            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any())
+            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any() && !mediaFile.Collections.Any())
             {
                 File.Delete(mediaFile.FilePath);
             }
@@ -76,7 +83,21 @@
 
             mediaFile.Posts.Remove(post);
 
-            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any())
+            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any() && !mediaFile.Collections.Any())
+            {
+                File.Delete(mediaFile.FilePath);
+            }
+
+            await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
+        public async Task RemoveCollectionFromMediaFile(string mediaFileId, Collection collection)
+        {
+            MediaFile mediaFile = this.GetById<MediaFile>(mediaFileId);
+
+            mediaFile.Collections.Remove(collection);
+
+            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any() && !mediaFile.Collections.Any())
             {
                 File.Delete(mediaFile.FilePath);
             }
@@ -86,7 +107,7 @@
 
         public T GetById<T>(string mediaFileId) =>
             this.mediaFilesRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(m => m.Id == mediaFileId)
                 .To<T>()
                 .FirstOrDefault();

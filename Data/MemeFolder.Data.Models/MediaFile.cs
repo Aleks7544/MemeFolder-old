@@ -29,6 +29,9 @@
         // Comments which contain the given media file
         public virtual ICollection<Comment> Comments { get; set; }
 
-        // A single given media file can be used on multiple Posts and/or Comments, thus reducing unnecessarily wasted storage. The two collections above exist in order to reduce the number of duplicate files that would otherwise be created if the given media file was to be used more than a single time.
+        // Collections which contain the given media file
+        public virtual ICollection<Collection> Collections { get; set; }
+
+        // A single given media file can be used on multiple Posts, Collections and/or Comments, thus reducing unnecessarily wasted storage. The two collections above exist in order to reduce the number of duplicate files that would otherwise be created if the given media file was to be used more than a single time.
     }
 }

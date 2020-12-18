@@ -87,16 +87,34 @@
             await this.usersRepository.SaveChangesAsync();
         }
 
+        public async Task AddCollectionToUserCollection(string userId, Collection collection)
+        {
+            ApplicationUser user = this.GetUserById<ApplicationUser>(userId);
+
+            user.Collections.Add(collection);
+
+            await this.usersRepository.SaveChangesAsync();
+        }
+
+        public async Task RemoveCollectionFromUserCollection(string userId, Collection collection)
+        {
+            ApplicationUser user = this.GetUserById<ApplicationUser>(userId);
+
+            user.Collections.Remove(collection);
+
+            await this.usersRepository.SaveChangesAsync();
+        }
+
         public T GetRelationshipById<T>(string firstUserId, string secondUserId) =>
             this.relationshipsRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(r => r.FirstUserId == firstUserId && r.SecondUserId == secondUserId)
                 .To<T>()
                 .FirstOrDefault();
 
         public T GetUserById<T>(string userId) =>
             this.usersRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(u => u.Id == userId)
                 .To<T>()
                 .FirstOrDefault();

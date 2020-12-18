@@ -13,9 +13,13 @@
 
         Task AddCommentToMediaFile(MediaFile mediaFile, Comment comment);
 
+        Task AddCollectionToMediaFile(MediaFile mediaFile, Collection collection);
+
         Task RemoveCommentFromMediaFile(string mediaFileId, Comment comment);
 
         Task RemovePostFromMediaFile(string mediaFileId, Post post);
+
+        Task RemoveCollectionFromMediaFile(string mediaFileId, Collection collection);
 
         T GetById<T>(string mediaFileId);
     }

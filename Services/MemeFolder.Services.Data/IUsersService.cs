@@ -15,6 +15,10 @@
 
         Task UnfollowUser(string firstUserId, string secondUserId);
 
+        Task AddCollectionToUserCollection(string userId, Collection collection);
+
+        Task RemoveCollectionFromUserCollection(string userId, Collection collection);
+
         T GetRelationshipById<T>(string firstUserId, string secondUserId);
 
         T GetUserById<T>(string userId);

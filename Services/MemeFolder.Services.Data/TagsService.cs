@@ -78,7 +78,7 @@
 
         public T GetById<T>(string id) =>
             this.tagsRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(p => p.Id == id)
                 .To<T>()
                 .FirstOrDefault();

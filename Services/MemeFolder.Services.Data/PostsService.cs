@@ -150,7 +150,7 @@
 
         public IEnumerable<T> GetAllPopularPost<T>(int page, int itemsPerPage = 25) =>
             this.postsRepository
-                .AllAsNoTracking()
+                .All()
                 .OrderByDescending(p => p.Likes.Select(l => l.CreatedOn >= DateTime.UtcNow.AddDays(-1)).Count())
                 .Skip((page - 1) * itemsPerPage)
                 .Take(itemsPerPage)
@@ -159,7 +159,7 @@
 
         public IEnumerable<T> GetAllNew<T>(int page, int itemsPerPage = 25) =>
             this.postsRepository
-                .AllAsNoTracking()
+                .All()
                 .OrderBy(x => x.CreatedOn)
                 .Skip((page - 1) * itemsPerPage)
                 .Take(itemsPerPage)
@@ -176,7 +176,7 @@
             }
 
             return this.postsRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(p => p.Tags.Any(t => tags.Any(x => x == t)))
                 .OrderByDescending(p => p.Tags.Count(t => tags.Any(x => x == t)))
                 .ThenByDescending(p => p.Likes.Select(l => l.CreatedOn >= DateTime.UtcNow.AddDays(-1)).Count())
@@ -196,7 +196,7 @@
             }
 
             return this.postsRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(p => p.Tags.Any(t => tags.Any(x => x == t)))
                 .OrderByDescending(p => p.Tags.Count(t => tags.Any(x => x == t)))
                 .ThenBy(x => x.CreatedOn)
@@ -208,7 +208,7 @@
 
         public T GetById<T>(string postId) =>
             this.postsRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(p => p.Id == postId)
                 .To<T>()
                 .FirstOrDefault();

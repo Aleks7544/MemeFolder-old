@@ -20,15 +20,13 @@
         private readonly IRepository<Like> likesRepository;
 
         private readonly IMediaFilesService mediaFilesService;
-        private readonly IPostsService postsService;
 
-        public CommentsService(IRepository<Comment> commentsRepository, IRepository<Like> likesRepository, IMediaFilesService mediaFilesService, IPostsService postsService)
+        public CommentsService(IRepository<Comment> commentsRepository, IRepository<Like> likesRepository, IDeletableEntityRepository<ApplicationUser> usersRepository, IMediaFilesService mediaFilesService, IPostsService postsService, IUsersService usersService)
         {
             this.commentsRepository = commentsRepository;
             this.likesRepository = likesRepository;
 
-            this.mediaFilesService = mediaFilesService;
-            this.postsService = postsService;
+            this.mediaFilesService = mediaFilesService;;
         }
 
         public async Task<Comment> CreateCommentAsync(CreateCommentInputModel input, string postId, string userId, string rootPath)
@@ -80,7 +78,7 @@
 
         public IEnumerable<T> GetAllPopularComments<T>(string postId, int page, int itemsPerPage = 50) =>
             this.commentsRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(c => c.PostId == postId)
                 .OrderByDescending(c => c.Likes.Select(l => l.CreatedOn >= DateTime.UtcNow.AddDays(-1)).Count())
                 .ThenByDescending(c => c.Likes.Count)
@@ -91,7 +89,7 @@
 
         public IEnumerable<T> GetAllNew<T>(string postId, int page, int itemsPerPage = 50) =>
             this.commentsRepository
-                .AllAsNoTracking()
+                .All()
                 .OrderBy(c => c.CreatedOn)
                 .Skip((page - 1) * itemsPerPage)
                 .Take(itemsPerPage)
@@ -100,7 +98,7 @@
 
         public T GetById<T>(string commentId) =>
             this.commentsRepository
-                .AllAsNoTracking()
+                .All()
                 .Where(c => c.Id == commentId)
                 .To<T>()
                 .FirstOrDefault();
