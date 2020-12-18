@@ -7,16 +7,16 @@
 
     public interface IMediaFilesService
     {
+        Task<MediaFile> CreateMediaFile(CreateMediaFileInputModel input, string userId);
+
         Task AddPostToMediaFile(MediaFile mediaFile, Post post);
 
         Task AddCommentToMediaFile(MediaFile mediaFile, Comment comment);
 
-        Task<MediaFile> CreateMediaFile(CreateMediaFileInputModel input, string userId);
+        Task RemoveCommentFromMediaFile(string mediaFileId, Comment comment);
 
-        Task RemovePostFromMediaFile(string id, Post post);
+        Task RemovePostFromMediaFile(string mediaFileId, Post post);
 
-        Task RemoveCommentFromMediaFile(string id, Comment comment);
-
-        T GetById<T>(string id);
+        T GetById<T>(string mediaFileId);
     }
 }

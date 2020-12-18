@@ -10,7 +10,7 @@
         public Tag()
         {
             this.Id = Guid.NewGuid().ToString();
-            this.Files = new HashSet<MediaFile>();
+            this.MediaFiles = new HashSet<MediaFile>();
             this.Posts = new HashSet<Post>();
         }
 
@@ -18,7 +18,7 @@
 
         public int Color { get; set; }
 
-        public virtual ICollection<MediaFile> Files { get; set; }
+        public virtual ICollection<MediaFile> MediaFiles { get; set; }
 
         public virtual ICollection<Post> Posts { get; set; }
     }

@@ -12,19 +12,19 @@
     {
         Task<Comment> CreateCommentAsync(CreateCommentInputModel input, string postId, string userId, string rootPath);
 
-        Task EditCommentAsync(CreateCommentInputModel input, string postId, string userId);
+        Task EditCommentAsync(CreateCommentInputModel input, string commentId, string rootPath);
 
-        Task DeleteCommentAsync(string id);
+        Task DeleteCommentAsync(string commentId);
 
-        IEnumerable<T> GetAllPopularComments<T>(int page, int itemsPerPage = 100);
+        IEnumerable<T> GetAllPopularComments<T>(string postId, int page, int itemsPerPage = 50);
 
-        IEnumerable<T> GetAllNew<T>(int page, int itemsPerPage = 100);
+        IEnumerable<T> GetAllNew<T>(string postId, int page, int itemsPerPage = 50);
 
-        T GetById<T>(string id);
+        T GetById<T>(string commentId);
 
-        Task LikeComment(string id, string userId, ReactionType reaction);
+        Task LikeComment(string commentId, string userId, ReactionType reaction);
 
-        Task UpdateLike(string id, string userId, ReactionType reaction);
+        Task UpdateLike(string commentId, string userId, ReactionType reaction);
 
         Task AddMediaFilesToComment(IEnumerable<IFormFile> mediaFiles, string userId, string postId, string rootPath, Comment comment);
     }

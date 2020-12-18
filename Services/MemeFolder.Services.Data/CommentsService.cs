@@ -1,5 +1,6 @@
 ﻿namespace MemeFolder.Services.Data
 {
+    using System;
     using System.Collections.Generic;
     using System.IO;
     using System.Linq;
@@ -16,13 +17,18 @@
     public class CommentsService : ICommentsService
     {
         private readonly IRepository<Comment> commentsRepository;
+        private readonly IRepository<Like> likesRepository;
 
         private readonly IMediaFilesService mediaFilesService;
+        private readonly IPostsService postsService;
 
-        public CommentsService(IRepository<Comment> commentsRepository, IMediaFilesService mediaFilesService)
+        public CommentsService(IRepository<Comment> commentsRepository, IRepository<Like> likesRepository, IMediaFilesService mediaFilesService, IPostsService postsService)
         {
             this.commentsRepository = commentsRepository;
+            this.likesRepository = likesRepository;
+
             this.mediaFilesService = mediaFilesService;
+            this.postsService = postsService;
         }
 
         public async Task<Comment> CreateCommentAsync(CreateCommentInputModel input, string postId, string userId, string rootPath)
@@ -42,14 +48,20 @@
             return comment;
         }
 
-        public Task EditCommentAsync(CreateCommentInputModel input, string postId, string userId)
+        public async Task EditCommentAsync(CreateCommentInputModel input, string commentId, string rootPath)
         {
-            throw new System.NotImplementedException();
+            Comment comment = this.GetById<Comment>(commentId);
+
+            comment.Text = input.Text;
+
+            await this.AddMediaFilesToComment(input.MediaFiles, comment.UserId, comment.PostId, rootPath, comment);
+
+            await this.commentsRepository.SaveChangesAsync();
         }
 
-        public async Task DeleteCommentAsync(string id)
+        public async Task DeleteCommentAsync(string commentId)
         {
-            Comment comment = this.GetById<Comment>(id);
+            Comment comment = this.GetById<Comment>(commentId);
 
             foreach (var commentLike in comment.Likes)
             {
@@ -66,31 +78,66 @@
             await this.commentsRepository.SaveChangesAsync();
         }
 
-        public IEnumerable<T> GetAllPopularComments<T>(int page, int itemsPerPage = 100)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public IEnumerable<T> GetAllNew<T>(int page, int itemsPerPage = 100)
-        {
-            throw new System.NotImplementedException();
-        }
-
-        public T GetById<T>(string id) =>
+        public IEnumerable<T> GetAllPopularComments<T>(string postId, int page, int itemsPerPage = 50) =>
             this.commentsRepository
                 .AllAsNoTracking()
-                .Where(c => c.Id == id)
+                .Where(c => c.PostId == postId)
+                .OrderByDescending(c => c.Likes.Select(l => l.CreatedOn >= DateTime.UtcNow.AddDays(-1)).Count())
+                .ThenByDescending(c => c.Likes.Count)
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .To<T>()
+                .ToList();
+
+        public IEnumerable<T> GetAllNew<T>(string postId, int page, int itemsPerPage = 50) =>
+            this.commentsRepository
+                .AllAsNoTracking()
+                .OrderBy(c => c.CreatedOn)
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .To<T>()
+                .ToList();
+
+        public T GetById<T>(string commentId) =>
+            this.commentsRepository
+                .AllAsNoTracking()
+                .Where(c => c.Id == commentId)
                 .To<T>()
                 .FirstOrDefault();
 
-        public Task LikeComment(string id, string userId, ReactionType reaction)
+        public async Task LikeComment(string commentId, string userId, ReactionType reaction)
         {
-            throw new System.NotImplementedException();
+            Comment comment = this.GetById<Comment>(commentId);
+
+            Like like = new Like
+            {
+                CommentId = commentId,
+                UserId = userId,
+                Reaction = reaction,
+                CreatedOn = DateTime.UtcNow,
+            };
+
+            await this.likesRepository.AddAsync(like);
+            await this.likesRepository.SaveChangesAsync();
         }
 
-        public Task UpdateLike(string id, string userId, ReactionType reaction)
+        public async Task UpdateLike(string commentId, string userId, ReactionType reaction)
         {
-            throw new System.NotImplementedException();
+            Like like = this.likesRepository.All().FirstOrDefault(x => x.UserId == userId && x.CommentId == commentId);
+            Comment comment = this.GetById<Comment>(commentId);
+
+            if (reaction == ReactionType.None)
+            {
+                comment.Likes.Remove(like);
+
+                this.likesRepository.Delete(like);
+            }
+            else
+            {
+                like.Reaction = reaction;
+
+                await this.likesRepository.SaveChangesAsync();
+            }
         }
 
         public async Task AddMediaFilesToComment(IEnumerable<IFormFile> mediaFiles, string userId, string postId, string rootPath, Comment comment)

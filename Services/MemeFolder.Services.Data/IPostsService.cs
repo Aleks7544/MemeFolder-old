@@ -5,10 +5,10 @@
 
     using MemeFolder.Data.Models;
     using MemeFolder.Data.Models.Enums;
+    using MemeFolder.Web.ViewModels.Comments;
     using MemeFolder.Web.ViewModels.Posts;
     using MemeFolder.Web.ViewModels.Tags;
     using Microsoft.AspNetCore.Http;
-    using Web.ViewModels.Comments;
 
     public interface IPostsService
     {
@@ -18,19 +18,23 @@
 
         Task<string> EditPostAsync(string id, EditPostInputModel input, string rootPath);
 
-        Task DeletePostAsync(string id);
+        Task DeletePostAsync(string postId);
 
         IEnumerable<T> GetAllPopularPost<T>(int page, int itemsPerPage = 25);
 
         IEnumerable<T> GetAllNew<T>(int page, int itemsPerPage = 25);
 
-        T GetById<T>(string id);
+        IEnumerable<T> GetAllPopularPostWithTags<T>(int page, IEnumerable<string> tagsIds, int itemsPerPage = 25);
 
-        Task LikePost(string id, string userId, ReactionType reaction);
+        IEnumerable<T> GetAllNewWithTags<T>(int page, IEnumerable<string> tagsIds, int itemsPerPage = 25);
 
-        Task UpdateLike(string id, string userId, ReactionType reaction);
+        T GetById<T>(string postId);
 
-        Task PostComment(CreateCommentInputModel input, string id, string userId, string rootPath);
+        Task LikePost(string postId, string userId, ReactionType reaction);
+
+        Task UpdateLike(string postId, string userId, ReactionType reaction);
+
+        Task PostComment(CreateCommentInputModel input, string postId, string userId, string rootPath);
 
         Task AddMediaFilesToPost(IEnumerable<IFormFile> mediaFiles, string userId, string rootPath, Post post);
 

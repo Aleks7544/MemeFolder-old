@@ -2,7 +2,7 @@
 {
     using System;
     using System.Collections.Generic;
-    
+
     using MemeFolder.Data.Common.Models;
 
     public class Comment : BaseDeletableModel<string>

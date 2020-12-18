@@ -18,7 +18,7 @@
     public class PostsService : IPostsService
     {
         private readonly string[] allowedExtensions = new[] { "jpg", "png", "gif", "jpeg", "mp4", "mp3", "wav", "ogg", "mp4" };
-        
+
         private readonly IDeletableEntityRepository<Post> postsRepository;
         private readonly IRepository<Tag> tagsRepository;
         private readonly IRepository<Like> likesRepository;
@@ -60,6 +60,11 @@
 
             await this.AddMediaFilesToPost(input.MediaFiles, userId, rootPath, post);
 
+            foreach (var tag in post.Tags)
+            {
+                await this.tagsService.AddPostToTagCollection(tag, post);
+            }
+
             await this.postsRepository.AddAsync(post);
             await this.postsRepository.SaveChangesAsync();
 
@@ -86,17 +91,37 @@
             post.Text = input.Text;
 
             this.AddTagsToPost(input.NewTags, post);
-
             await this.AddMediaFilesToPost(input.NewMediaFiles, post.PosterId, rootPath, post);
+
+            foreach (var inputRemovedTag in input.RemovedTags)
+            {
+                Tag tag = this.tagsService.GetById<Tag>(inputRemovedTag);
+
+                post.Tags.Remove(tag);
+
+                foreach (var postMediaFile in post.MediaFiles)
+                {
+                    await this.tagsService.RemoveMediaFileFromTagCollection(tag.Id, postMediaFile);
+                }
+
+                await this.tagsService.RemovePostFromTagCollection(inputRemovedTag, post);
+            }
+
+            foreach (var inputRemovedMediaFile in input.RemovedMediaFiles)
+            {
+                post.MediaFiles.Remove(this.mediaFilesService.GetById<MediaFile>(inputRemovedMediaFile));
+
+                await this.mediaFilesService.RemovePostFromMediaFile(inputRemovedMediaFile, post);
+            }
 
             await this.postsRepository.SaveChangesAsync();
 
             return post.Id;
         }
 
-        public async Task DeletePostAsync(string id)
+        public async Task DeletePostAsync(string postId)
         {
-            Post post = this.GetById<Post>(id);
+            Post post = this.GetById<Post>(postId);
 
             foreach (var postLike in post.Likes)
             {
@@ -111,6 +136,11 @@
             foreach (var postComment in post.Comments)
             {
                 await this.commentsService.DeleteCommentAsync(postComment.Id);
+            }
+
+            foreach (var postTag in post.Tags)
+            {
+                await this.tagsService.RemovePostFromTagCollection(postTag.Id, post);
             }
 
             this.postsRepository.Delete(post);
@@ -136,20 +166,60 @@
                 .To<T>()
                 .ToList();
 
-        public T GetById<T>(string id) =>
+        public IEnumerable<T> GetAllPopularPostWithTags<T>(int page, IEnumerable<string> tagsIds, int itemsPerPage = 25)
+        {
+            List<Tag> tags = new List<Tag>();
+
+            foreach (var tagId in tagsIds)
+            {
+                tags.Add(this.tagsService.GetById<Tag>(tagId));
+            }
+
+            return this.postsRepository
+                .AllAsNoTracking()
+                .Where(p => p.Tags.Any(t => tags.Any(x => x == t)))
+                .OrderByDescending(p => p.Tags.Count(t => tags.Any(x => x == t)))
+                .ThenByDescending(p => p.Likes.Select(l => l.CreatedOn >= DateTime.UtcNow.AddDays(-1)).Count())
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .To<T>()
+                .ToList();
+        }
+
+        public IEnumerable<T> GetAllNewWithTags<T>(int page, IEnumerable<string> tagsIds, int itemsPerPage = 25)
+        {
+            List<Tag> tags = new List<Tag>();
+
+            foreach (var tagId in tagsIds)
+            {
+                tags.Add(this.tagsService.GetById<Tag>(tagId));
+            }
+
+            return this.postsRepository
+                .AllAsNoTracking()
+                .Where(p => p.Tags.Any(t => tags.Any(x => x == t)))
+                .OrderByDescending(p => p.Tags.Count(t => tags.Any(x => x == t)))
+                .ThenBy(x => x.CreatedOn)
+                .Skip((page - 1) * itemsPerPage)
+                .Take(itemsPerPage)
+                .To<T>()
+                .ToList();
+        }
+
+        public T GetById<T>(string postId) =>
             this.postsRepository
                 .AllAsNoTracking()
-                .Where(p => p.Id == id)
+                .Where(p => p.Id == postId)
                 .To<T>()
                 .FirstOrDefault();
 
-        public async Task LikePost(string id, string userId, ReactionType reaction)
+        public async Task LikePost(string postId, string userId, ReactionType reaction)
         {
-            Post post = this.GetById<Post>(id);
+            Post post = this.GetById<Post>(postId);
 
             Like like = new Like
             {
-                PostId = id,
+                PostId = postId,
                 Reaction = reaction,
                 UserId = userId,
                 CreatedOn = DateTime.UtcNow,
@@ -157,13 +227,14 @@
 
             post.Likes.Add(like);
 
+            await this.likesRepository.AddAsync(like);
             await this.postsRepository.SaveChangesAsync();
         }
 
-        public async Task UpdateLike(string id, string userId, ReactionType reaction)
+        public async Task UpdateLike(string postId, string userId, ReactionType reaction)
         {
-            Like like = this.likesRepository.All().FirstOrDefault(x => x.UserId == userId && x.PostId == id);
-            Post post = this.GetById<Post>(id);
+            Like like = this.likesRepository.All().FirstOrDefault(x => x.UserId == userId && x.PostId == postId);
+            Post post = this.GetById<Post>(postId);
 
             if (reaction == ReactionType.None)
             {
@@ -179,11 +250,11 @@
             }
         }
 
-        public async Task PostComment(CreateCommentInputModel input, string id, string userId, string rootPath)
+        public async Task PostComment(CreateCommentInputModel input, string postId, string userId, string rootPath)
         {
-            Comment comment = this.commentsService.CreateCommentAsync(input, id, userId, rootPath).GetAwaiter().GetResult();
+            Comment comment = this.commentsService.CreateCommentAsync(input, postId, userId, rootPath).GetAwaiter().GetResult();
 
-            Post post = this.GetById<Post>(id);
+            Post post = this.GetById<Post>(postId);
 
             post.Comments.Add(comment);
 
@@ -220,7 +291,7 @@
 
                 foreach (var postTag in post.Tags)
                 {
-                    await this.tagsService.AddMediaFileToTag(postTag, mediaFile);
+                    await this.tagsService.AddMediaFileToTagCollection(postTag, mediaFile);
                 }
             }
         }

@@ -19,20 +19,6 @@
             this.mediaFilesRepository = mediaFilesRepository;
         }
 
-        public async Task AddCommentToMediaFile(MediaFile mediaFile, Comment comment)
-        {
-            mediaFile.Comments.Add(comment);
-
-            await this.mediaFilesRepository.SaveChangesAsync();
-        }
-
-        public async Task AddPostToMediaFile(MediaFile mediaFile, Post post)
-        {
-            mediaFile.Posts.Add(post);
-
-            await this.mediaFilesRepository.SaveChangesAsync();
-        }
-
         public async Task<MediaFile> CreateMediaFile(CreateMediaFileInputModel input, string userId)
         {
             string directory = $"{input.RootPath}/mediaFiles/{userId}";
@@ -56,23 +42,23 @@
             return mediaFile;
         }
 
-        public async Task RemovePostFromMediaFile(string id, Post post)
+        public async Task AddPostToMediaFile(MediaFile mediaFile, Post post)
         {
-            MediaFile mediaFile = this.GetById<MediaFile>(id);
-
-            mediaFile.Posts.Remove(post);
-
-            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any())
-            {
-                File.Delete(mediaFile.FilePath);
-            }
+            mediaFile.Posts.Add(post);
 
             await this.mediaFilesRepository.SaveChangesAsync();
         }
 
-        public async Task RemoveCommentFromMediaFile(string id, Comment comment)
+        public async Task AddCommentToMediaFile(MediaFile mediaFile, Comment comment)
         {
-            MediaFile mediaFile = this.GetById<MediaFile>(id);
+            mediaFile.Comments.Add(comment);
+
+            await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
+        public async Task RemoveCommentFromMediaFile(string mediaFileId, Comment comment)
+        {
+            MediaFile mediaFile = this.GetById<MediaFile>(mediaFileId);
 
             mediaFile.Comments.Remove(comment);
 
@@ -84,10 +70,24 @@
             await this.mediaFilesRepository.SaveChangesAsync();
         }
 
-        public T GetById<T>(string id) =>
+        public async Task RemovePostFromMediaFile(string mediaFileId, Post post)
+        {
+            MediaFile mediaFile = this.GetById<MediaFile>(mediaFileId);
+
+            mediaFile.Posts.Remove(post);
+
+            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any())
+            {
+                File.Delete(mediaFile.FilePath);
+            }
+
+            await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
+        public T GetById<T>(string mediaFileId) =>
             this.mediaFilesRepository
                 .AllAsNoTracking()
-                .Where(m => m.Id == id)
+                .Where(m => m.Id == mediaFileId)
                 .To<T>()
                 .FirstOrDefault();
     }
