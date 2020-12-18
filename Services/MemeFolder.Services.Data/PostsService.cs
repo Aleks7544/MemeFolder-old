@@ -18,6 +18,7 @@
     public class PostsService : IPostsService
     {
         private readonly string[] allowedExtensions = new[] { "jpg", "png", "gif", "jpeg", "mp4", "mp3", "wav", "ogg", "mp4" };
+        
         private readonly IDeletableEntityRepository<Post> postsRepository;
         private readonly IRepository<Tag> tagsRepository;
         private readonly IRepository<Like> likesRepository;
@@ -93,6 +94,30 @@
             return post.Id;
         }
 
+        public async Task DeletePostAsync(string id)
+        {
+            Post post = this.GetById<Post>(id);
+
+            foreach (var postLike in post.Likes)
+            {
+                await this.UpdateLike(postLike.PostId, postLike.UserId, ReactionType.None);
+            }
+
+            foreach (var postMediaFile in post.MediaFiles)
+            {
+                await this.mediaFilesService.RemovePostFromMediaFile(postMediaFile.Id, post);
+            }
+
+            foreach (var postComment in post.Comments)
+            {
+                await this.commentsService.DeleteCommentAsync(postComment.Id);
+            }
+
+            this.postsRepository.Delete(post);
+
+            await this.postsRepository.SaveChangesAsync();
+        }
+
         public IEnumerable<T> GetAllPopularPost<T>(int page, int itemsPerPage = 25) =>
             this.postsRepository
                 .AllAsNoTracking()
@@ -114,7 +139,7 @@
         public T GetById<T>(string id) =>
             this.postsRepository
                 .AllAsNoTracking()
-                .Where(x => x.Id == id)
+                .Where(p => p.Id == id)
                 .To<T>()
                 .FirstOrDefault();
 
@@ -154,9 +179,9 @@
             }
         }
 
-        public async Task PostComment(CreateCommentInputModel input, string id, string userId)
+        public async Task PostComment(CreateCommentInputModel input, string id, string userId, string rootPath)
         {
-            Comment comment = this.commentsService.CreateCommentAsync(input, id, userId).GetAwaiter().GetResult();
+            Comment comment = this.commentsService.CreateCommentAsync(input, id, userId, rootPath).GetAwaiter().GetResult();
 
             Post post = this.GetById<Post>(id);
 

@@ -2,10 +2,12 @@
 {
     using System;
     using System.IO;
+    using System.Linq;
     using System.Threading.Tasks;
 
     using MemeFolder.Data.Common.Repositories;
     using MemeFolder.Data.Models;
+    using MemeFolder.Services.Mapping;
     using MemeFolder.Web.ViewModels.MediaFiles;
 
     public class MediaFilesService : IMediaFilesService
@@ -53,5 +55,40 @@
 
             return mediaFile;
         }
+
+        public async Task RemovePostFromMediaFile(string id, Post post)
+        {
+            MediaFile mediaFile = this.GetById<MediaFile>(id);
+
+            mediaFile.Posts.Remove(post);
+
+            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any())
+            {
+                File.Delete(mediaFile.FilePath);
+            }
+
+            await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
+        public async Task RemoveCommentFromMediaFile(string id, Comment comment)
+        {
+            MediaFile mediaFile = this.GetById<MediaFile>(id);
+
+            mediaFile.Comments.Remove(comment);
+
+            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any())
+            {
+                File.Delete(mediaFile.FilePath);
+            }
+
+            await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
+        public T GetById<T>(string id) =>
+            this.mediaFilesRepository
+                .AllAsNoTracking()
+                .Where(m => m.Id == id)
+                .To<T>()
+                .FirstOrDefault();
     }
 }

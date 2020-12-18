@@ -4,13 +4,14 @@
     using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
-    using Mapping;
+
     using MemeFolder.Data.Common.Repositories;
     using MemeFolder.Data.Models;
     using MemeFolder.Data.Models.Enums;
+    using MemeFolder.Services.Mapping;
     using MemeFolder.Web.ViewModels.Comments;
-    using Microsoft.AspNetCore.Http;
     using MemeFolder.Web.ViewModels.MediaFiles;
+    using Microsoft.AspNetCore.Http;
 
     public class CommentsService : ICommentsService
     {
@@ -46,9 +47,23 @@
             throw new System.NotImplementedException();
         }
 
-        public Task DeleteCommentAsync(string id)
+        public async Task DeleteCommentAsync(string id)
         {
-            throw new System.NotImplementedException();
+            Comment comment = this.GetById<Comment>(id);
+
+            foreach (var commentLike in comment.Likes)
+            {
+                await this.UpdateLike(commentLike.PostId, commentLike.UserId, ReactionType.None);
+            }
+
+            foreach (var commentMediaFile in comment.Media)
+            {
+                await this.mediaFilesService.RemoveCommentFromMediaFile(commentMediaFile.Id, comment);
+            }
+
+            this.commentsRepository.Delete(comment);
+
+            await this.commentsRepository.SaveChangesAsync();
         }
 
         public IEnumerable<T> GetAllPopularComments<T>(int page, int itemsPerPage = 100)
@@ -69,6 +84,11 @@
                 .FirstOrDefault();
 
         public Task LikeComment(string id, string userId, ReactionType reaction)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        public Task UpdateLike(string id, string userId, ReactionType reaction)
         {
             throw new System.NotImplementedException();
         }

@@ -18,6 +18,8 @@
 
         Task<string> EditPostAsync(string id, EditPostInputModel input, string rootPath);
 
+        Task DeletePostAsync(string id);
+
         IEnumerable<T> GetAllPopularPost<T>(int page, int itemsPerPage = 25);
 
         IEnumerable<T> GetAllNew<T>(int page, int itemsPerPage = 25);
@@ -28,7 +30,7 @@
 
         Task UpdateLike(string id, string userId, ReactionType reaction);
 
-        Task PostComment(CreateCommentInputModel input, string id, string userId);
+        Task PostComment(CreateCommentInputModel input, string id, string userId, string rootPath);
 
         Task AddMediaFilesToPost(IEnumerable<IFormFile> mediaFiles, string userId, string rootPath, Post post);
 

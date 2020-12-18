@@ -12,5 +12,11 @@
         Task AddCommentToMediaFile(MediaFile mediaFile, Comment comment);
 
         Task<MediaFile> CreateMediaFile(CreateMediaFileInputModel input, string userId);
+
+        Task RemovePostFromMediaFile(string id, Post post);
+
+        Task RemoveCommentFromMediaFile(string id, Comment comment);
+
+        T GetById<T>(string id);
     }
 }

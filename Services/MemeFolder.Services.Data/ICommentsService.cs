@@ -10,7 +10,7 @@
 
     public interface ICommentsService
     {
-        Task<Comment> CreateCommentAsync(CreateCommentInputModel input, string postId, string userId);
+        Task<Comment> CreateCommentAsync(CreateCommentInputModel input, string postId, string userId, string rootPath);
 
         Task EditCommentAsync(CreateCommentInputModel input, string postId, string userId);
 
@@ -23,6 +23,8 @@
         T GetById<T>(string id);
 
         Task LikeComment(string id, string userId, ReactionType reaction);
+
+        Task UpdateLike(string id, string userId, ReactionType reaction);
 
         Task AddMediaFilesToComment(IEnumerable<IFormFile> mediaFiles, string userId, string postId, string rootPath, Comment comment);
     }
