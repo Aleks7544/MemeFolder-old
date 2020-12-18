@@ -2,6 +2,7 @@
 {
     public enum RelationshipStatus
     {
+        None = 0,
         Pending = 1,
         Friends = 2,
         BestFriends = 3,
