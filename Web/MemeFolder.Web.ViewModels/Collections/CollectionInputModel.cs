@@ -4,7 +4,7 @@
 
     using MemeFolder.Data.Models.Enums;
 
-    public class BaseCollectionInputModel
+    public class CollectionInputModel
     {
         [Required]
         public string Name { get; set; }

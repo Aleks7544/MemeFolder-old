@@ -1,7 +1,6 @@
 ﻿namespace MemeFolder.Services.Data
 {
     using System;
-    using System.IO;
     using System.Linq;
     using System.Threading.Tasks;
 
@@ -9,27 +8,25 @@
     using MemeFolder.Data.Models;
     using MemeFolder.Services.Mapping;
     using MemeFolder.Web.ViewModels.Collections;
-    using MemeFolder.Web.ViewModels.MediaFiles;
 
     public class CollectionsService : ICollectionsService
     {
         private readonly IDeletableEntityRepository<Collection> collectionsRepository;
+        private readonly IRepository<MediaFile> mediaFilesRepository;
+        private readonly IRepository<Tag> tagsRepository;
+        private readonly IDeletableEntityRepository<Post> postsRepository;
+        private readonly IDeletableEntityRepository<ApplicationUser> usersRepository;
 
-        private readonly IUsersService usersService;
-        private readonly IPostsService postsService;
-        private readonly IMediaFilesService mediaFilesService;
-
-
-        public CollectionsService(IDeletableEntityRepository<Collection> collectionsRepository, IUsersService usersService, IPostsService postsService, IMediaFilesService mediaFilesService)
+        public CollectionsService(IDeletableEntityRepository<Collection> collectionsRepository, IRepository<MediaFile> mediaFilesRepository, IRepository<Tag> tagsRepository, IDeletableEntityRepository<Post> postsRepository, IDeletableEntityRepository<ApplicationUser> usersRepository)
         {
             this.collectionsRepository = collectionsRepository;
-
-            this.usersService = usersService;
-            this.postsService = postsService;
-            this.mediaFilesService = mediaFilesService;
+            this.mediaFilesRepository = mediaFilesRepository;
+            this.tagsRepository = tagsRepository;
+            this.postsRepository = postsRepository;
+            this.usersRepository = usersRepository;
         }
 
-        public async Task CreateCollectionAsync(BaseCollectionInputModel input, string userId, string rootPath)
+        public async Task CreateCollectionAsync(CollectionInputModel input, string userId, string rootPath)
         {
             Collection collection = new Collection
             {
@@ -41,52 +38,16 @@
             };
 
             await this.collectionsRepository.AddAsync(collection);
-
-            await this.usersService.AddCollectionToUserCollection(userId, collection);
-
             await this.collectionsRepository.SaveChangesAsync();
         }
 
-        public async Task UpdateCollectionAsync(EditCollectionInputModel input, string collectionId, string userId, string rootPath)
+        public async Task UpdateCollectionAsync(CollectionInputModel input, string collectionId, string userId, string rootPath)
         {
             Collection collection = this.GetById<Collection>(collectionId);
 
             collection.Name = input.Name;
             collection.Description = input.Description;
             collection.Visibility = input.Visibility;
-
-            foreach (var inputNewPost in input.NewPosts)
-            {
-                collection.Posts.Add(this.postsService.GetById<Post>(inputNewPost));
-            }
-
-            foreach (var inputMediaFile in input.NewMediaFiles)
-            {
-                CreateMediaFileInputModel mediaFileInputModel = new CreateMediaFileInputModel
-                {
-                    Extension = Path.GetExtension(inputMediaFile.FileName).TrimStart('.'),
-                    RootPath = rootPath,
-                    MediaFile = inputMediaFile,
-                };
-
-                MediaFile mediaFile = this.mediaFilesService.CreateMediaFile(mediaFileInputModel, userId).GetAwaiter().GetResult();
-
-                collection.MediaFiles.Add(mediaFile);
-
-                await this.mediaFilesService.AddCollectionToMediaFile(mediaFile, collection);
-            }
-
-            foreach (var inputRemovedMediaFile in input.RemovedMediaFiles)
-            {
-                collection.MediaFiles.Remove(this.mediaFilesService.GetById<MediaFile>(inputRemovedMediaFile));
-
-                await this.mediaFilesService.RemoveCollectionFromMediaFile(inputRemovedMediaFile, collection);
-            }
-
-            foreach (var inputRemovedPost in input.RemovedPosts)
-            {
-                collection.Posts.Remove(this.postsService.GetById<Post>(inputRemovedPost));
-            }
 
             await this.collectionsRepository.SaveChangesAsync();
         }
@@ -97,12 +58,22 @@
 
             foreach (var collectionMediaFile in collection.MediaFiles)
             {
-                await this.mediaFilesService.RemoveCollectionFromMediaFile(collectionMediaFile.Id, collection);
+                collectionMediaFile.Collections.Remove(collection);
+            }
+
+            foreach (var collectionPost in collection.Posts)
+            {
+                collectionPost.Collections.Remove(collection);
             }
 
             foreach (var collectionFollower in collection.Followers)
             {
-                await this.usersService.RemoveCollectionFromUserCollection(collectionFollower.Id, collection);
+                collectionFollower.Collections.Remove(collection);
+            }
+
+            foreach (var collectionTag in collection.Tags)
+            {
+                collectionTag.Collections.Remove(collection);
             }
 
             this.collectionsRepository.Delete(collection);
@@ -110,28 +81,92 @@
             await this.collectionsRepository.SaveChangesAsync();
         }
 
-        public async Task FollowCollectionAsync(string collectionId, string userId)
+        public async Task AddMediaFileToCollectionAsync(string collectionId, MediaFile mediaFile)
         {
             Collection collection = this.GetById<Collection>(collectionId);
 
-            ApplicationUser user = this.usersService.GetUserById<ApplicationUser>(userId);
-
-            collection.Followers.Add(user);
-            await this.usersService.AddCollectionToUserCollection(userId, collection);
+            collection.MediaFiles.Add(mediaFile);
+            mediaFile.Collections.Add(collection);
 
             await this.collectionsRepository.SaveChangesAsync();
+            await this.mediaFilesRepository.SaveChangesAsync();
         }
 
-        public async Task UnfollowCollectionAsync(string collectionId, string userId)
+        public async Task RemoveMediaFileFromCollectionAsync(string collectionId, MediaFile mediaFile)
         {
             Collection collection = this.GetById<Collection>(collectionId);
 
-            ApplicationUser user = this.usersService.GetUserById<ApplicationUser>(userId);
-
-            collection.Followers.Remove(user);
-            await this.usersService.RemoveCollectionFromUserCollection(userId, collection);
+            collection.MediaFiles.Remove(mediaFile);
+            mediaFile.Collections.Remove(collection);
 
             await this.collectionsRepository.SaveChangesAsync();
+            await this.mediaFilesRepository.SaveChangesAsync();
+        }
+
+        public async Task AddPostToCollectionAsync(string collectionId, Post post)
+        {
+            Collection collection = this.GetById<Collection>(collectionId);
+
+            collection.Posts.Add(post);
+            post.Collections.Add(collection);
+
+            await this.collectionsRepository.SaveChangesAsync();
+            await this.postsRepository.SaveChangesAsync();
+        }
+
+        public async Task RemovePostFromCollectionAsync(string collectionId, Post post)
+        {
+            Collection collection = this.GetById<Collection>(collectionId);
+
+            collection.Posts.Remove(post);
+            post.Collections.Remove(collection);
+
+            await this.collectionsRepository.SaveChangesAsync();
+            await this.postsRepository.SaveChangesAsync();
+        }
+
+        public async Task AddTagToCollectionAsync(string collectionId, Tag tag)
+        {
+            Collection collection = this.GetById<Collection>(collectionId);
+
+            collection.Tags.Add(tag);
+            tag.Collections.Add(collection);
+
+            await this.collectionsRepository.SaveChangesAsync();
+            await this.tagsRepository.SaveChangesAsync();
+        }
+
+        public async Task RemoveTagFromCollectionAsync(string collectionId, Tag tag)
+        {
+            Collection collection = this.GetById<Collection>(collectionId);
+
+            collection.Tags.Remove(tag);
+            tag.Collections.Remove(collection);
+
+            await this.collectionsRepository.SaveChangesAsync();
+            await this.tagsRepository.SaveChangesAsync();
+        }
+
+        public async Task AddFollowerToCollectionAsync(string collectionId, ApplicationUser user)
+        {
+            Collection collection = this.GetById<Collection>(collectionId);
+
+            collection.Followers.Add(user);
+            user.Collections.Add(collection);
+
+            await this.collectionsRepository.SaveChangesAsync();
+            await this.usersRepository.SaveChangesAsync();
+        }
+
+        public async Task RemoveFollowerFromCollectionAsync(string collectionId, ApplicationUser user)
+        {
+            Collection collection = this.GetById<Collection>(collectionId);
+
+            collection.Followers.Remove(user);
+            user.Collections.Remove(collection);
+
+            await this.collectionsRepository.SaveChangesAsync();
+            await this.usersRepository.SaveChangesAsync();
         }
 
         public T GetById<T>(string collectionId) =>

@@ -15,6 +15,7 @@
             this.Likes = new HashSet<Like>();
             this.Comments = new List<Comment>();
             this.Tags = new HashSet<Tag>();
+            this.Collections = new HashSet<Collection>();
         }
 
         public string PosterId { get; set; }
@@ -30,6 +31,8 @@
         public Post RepostedPost { get; set; }
 
         public virtual ICollection<MediaFile> MediaFiles { get; set; }
+
+        public virtual ICollection<Collection> Collections { get; set; }
 
         public virtual ICollection<Like> Likes { get; set; }
 

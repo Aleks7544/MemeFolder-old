@@ -13,6 +13,7 @@
             this.MediaFiles = new HashSet<MediaFile>();
             this.Posts = new HashSet<Post>();
             this.Tags = new HashSet<Tag>();
+            this.Collections = new HashSet<Collection>();
         }
 
         public string Name { get; set; }
@@ -20,6 +21,8 @@
         public int Color { get; set; }
 
         public virtual ICollection<MediaFile> MediaFiles { get; set; }
+
+        public virtual ICollection<Collection> Collections { get; set; }
 
         public virtual ICollection<Post> Posts { get; set; }
 
