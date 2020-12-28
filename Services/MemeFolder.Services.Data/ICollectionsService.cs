@@ -28,6 +28,6 @@
 
         Task RemoveFollowerFromCollectionAsync(string collectionId, ApplicationUser user);
 
-        T GetById<T>(string collectionId);
+        T GetByIdWithTracking<T>(string collectionId);
     }
 }

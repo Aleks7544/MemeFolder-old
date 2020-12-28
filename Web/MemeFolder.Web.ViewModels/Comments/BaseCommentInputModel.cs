@@ -2,14 +2,14 @@
 {
     using System.Collections.Generic;
 
+    using MemeFolder.Data.Models;
     using MemeFolder.Web.ViewModels.ValidationAttributes;
-    using Microsoft.AspNetCore.Http;
 
-    public class CreateCommentInputModel
+    public class BaseCommentInputModel
     {
         [TextOrFileRequired]
         public string Text { get; set; }
 
-        public IEnumerable<IFormFile> MediaFiles { get; set; }
+        public ICollection<MediaFile> MediaFiles { get; set; }
     }
 }

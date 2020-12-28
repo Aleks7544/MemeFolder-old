@@ -10,9 +10,9 @@
 
     public interface ICommentsService
     {
-        Task<Comment> CreateCommentAsync(CreateCommentInputModel input, string postId, string userId, string rootPath);
+        Task CreateCommentAsync(BaseCommentInputModel input, string postId, string userId, string rootPath);
 
-        Task EditCommentAsync(CreateCommentInputModel input, string commentId, string rootPath);
+        Task EditCommentAsync(string text, string commentId, string rootPath);
 
         Task DeleteCommentAsync(string commentId);
 
@@ -20,12 +20,10 @@
 
         IEnumerable<T> GetAllNew<T>(string postId, int page, int itemsPerPage = 50);
 
-        T GetById<T>(string commentId);
+        T GetByIdWithTracking<T>(string commentId);
 
         Task LikeComment(string commentId, string userId, ReactionType reaction);
 
         Task UpdateLike(string commentId, string userId, ReactionType reaction);
-
-        Task AddMediaFilesToComment(IEnumerable<IFormFile> mediaFiles, string userId, string postId, string rootPath, Comment comment);
     }
 }

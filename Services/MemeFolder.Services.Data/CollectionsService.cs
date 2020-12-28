@@ -43,7 +43,7 @@
 
         public async Task UpdateCollectionAsync(CollectionInputModel input, string collectionId, string userId, string rootPath)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.Name = input.Name;
             collection.Description = input.Description;
@@ -54,7 +54,7 @@
 
         public async Task DeleteCollectionAsync(string collectionId)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             foreach (var collectionMediaFile in collection.MediaFiles)
             {
@@ -83,7 +83,7 @@
 
         public async Task AddMediaFileToCollectionAsync(string collectionId, MediaFile mediaFile)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.MediaFiles.Add(mediaFile);
             mediaFile.Collections.Add(collection);
@@ -94,7 +94,7 @@
 
         public async Task RemoveMediaFileFromCollectionAsync(string collectionId, MediaFile mediaFile)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.MediaFiles.Remove(mediaFile);
             mediaFile.Collections.Remove(collection);
@@ -105,7 +105,7 @@
 
         public async Task AddPostToCollectionAsync(string collectionId, Post post)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.Posts.Add(post);
             post.Collections.Add(collection);
@@ -116,7 +116,7 @@
 
         public async Task RemovePostFromCollectionAsync(string collectionId, Post post)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.Posts.Remove(post);
             post.Collections.Remove(collection);
@@ -127,7 +127,7 @@
 
         public async Task AddTagToCollectionAsync(string collectionId, Tag tag)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.Tags.Add(tag);
             tag.Collections.Add(collection);
@@ -138,7 +138,7 @@
 
         public async Task RemoveTagFromCollectionAsync(string collectionId, Tag tag)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.Tags.Remove(tag);
             tag.Collections.Remove(collection);
@@ -149,7 +149,7 @@
 
         public async Task AddFollowerToCollectionAsync(string collectionId, ApplicationUser user)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.Followers.Add(user);
             user.Collections.Add(collection);
@@ -160,7 +160,7 @@
 
         public async Task RemoveFollowerFromCollectionAsync(string collectionId, ApplicationUser user)
         {
-            Collection collection = this.GetById<Collection>(collectionId);
+            Collection collection = this.GetByIdWithTracking<Collection>(collectionId);
 
             collection.Followers.Remove(user);
             user.Collections.Remove(collection);
@@ -169,7 +169,7 @@
             await this.usersRepository.SaveChangesAsync();
         }
 
-        public T GetById<T>(string collectionId) =>
+        public T GetByIdWithTracking<T>(string collectionId) =>
             this.collectionsRepository
                 .All()
                 .Where(p => p.Id == collectionId)

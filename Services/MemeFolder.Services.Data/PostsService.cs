@@ -17,7 +17,7 @@
 
     public class PostsService : IPostsService
     {
-        private readonly string[] allowedExtensions = new[] { "jpg", "png", "gif", "jpeg", "mp4", "mp3", "wav", "ogg", "mp4" };
+        private readonly string[] allowedExtensions = new[] { "jpg", "png", "jpeg", "gif", "mp3", "wav", "ogg", "mp4" };
 
         private readonly IDeletableEntityRepository<Post> postsRepository;
         private readonly IRepository<Tag> tagsRepository;
@@ -250,7 +250,7 @@
             }
         }
 
-        public async Task PostComment(CreateCommentInputModel input, string postId, string userId, string rootPath)
+        public async Task PostComment(BaseCommentInputModel input, string postId, string userId, string rootPath)
         {
             Comment comment = this.commentsService.CreateCommentAsync(input, postId, userId, rootPath).GetAwaiter().GetResult();
 

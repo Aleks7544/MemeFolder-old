@@ -34,7 +34,7 @@
 
         Task UpdateLike(string postId, string userId, ReactionType reaction);
 
-        Task PostComment(CreateCommentInputModel input, string postId, string userId, string rootPath);
+        Task PostComment(BaseCommentInputModel input, string postId, string userId, string rootPath);
 
         Task AddMediaFilesToPost(IEnumerable<IFormFile> mediaFiles, string userId, string rootPath, Post post);
 
