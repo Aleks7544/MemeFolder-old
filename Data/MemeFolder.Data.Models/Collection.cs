@@ -14,6 +14,7 @@
             this.MediaFiles = new List<MediaFile>();
             this.Posts = new List<Post>();
             this.Followers = new HashSet<ApplicationUser>();
+            this.Tags = new HashSet<Tag>();
         }
 
         public string Name { get; set; }
@@ -31,5 +32,7 @@
         public virtual ICollection<Post> Posts { get; set; }
 
         public virtual ICollection<ApplicationUser> Followers { get; set; }
+
+        public virtual ICollection<Tag> Tags { get; set; }
     }
 }

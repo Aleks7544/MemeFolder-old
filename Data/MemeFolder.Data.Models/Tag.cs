@@ -12,6 +12,7 @@
             this.Id = Guid.NewGuid().ToString();
             this.MediaFiles = new HashSet<MediaFile>();
             this.Posts = new HashSet<Post>();
+            this.Tags = new HashSet<Tag>();
         }
 
         public string Name { get; set; }
@@ -21,5 +22,7 @@
         public virtual ICollection<MediaFile> MediaFiles { get; set; }
 
         public virtual ICollection<Post> Posts { get; set; }
+
+        public virtual ICollection<Tag> Tags { get; set; }
     }
 }

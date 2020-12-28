@@ -27,6 +27,8 @@
 
         public string RepostedPostId { get; set; }
 
+        public Post RepostedPost { get; set; }
+
         public virtual ICollection<MediaFile> MediaFiles { get; set; }
 
         public virtual ICollection<Like> Likes { get; set; }
