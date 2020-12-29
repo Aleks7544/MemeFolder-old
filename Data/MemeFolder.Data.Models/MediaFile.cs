@@ -23,6 +23,8 @@
 
         public ApplicationUser Uploader { get; set; }
 
+        public bool IsDeleted { get; set; }
+
         // Posts which contain the given media file
         public virtual ICollection<Post> Posts { get; set; }
 

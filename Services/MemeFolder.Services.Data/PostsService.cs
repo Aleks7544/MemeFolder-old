@@ -109,7 +109,7 @@
 
             foreach (var inputRemovedMediaFile in input.RemovedMediaFiles)
             {
-                post.MediaFiles.Remove(this.mediaFilesService.GetById<MediaFile>(inputRemovedMediaFile));
+                post.MediaFiles.Remove(this.mediaFilesService.GetByIdWithTracking<MediaFile>(inputRemovedMediaFile));
 
                 await this.mediaFilesService.RemovePostFromMediaFile(inputRemovedMediaFile, post);
             }

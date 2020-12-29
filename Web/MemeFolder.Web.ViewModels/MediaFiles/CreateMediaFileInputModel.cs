@@ -1,6 +1,7 @@
 ﻿namespace MemeFolder.Web.ViewModels.MediaFiles
 {
     using System.ComponentModel.DataAnnotations;
+
     using Microsoft.AspNetCore.Http;
 
     public class CreateMediaFileInputModel

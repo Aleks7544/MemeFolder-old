@@ -13,13 +13,15 @@
     public class MediaFilesService : IMediaFilesService
     {
         private readonly IRepository<MediaFile> mediaFilesRepository;
+        private readonly IRepository<Tag> tagsRepository;
 
-        public MediaFilesService(IRepository<MediaFile> mediaFilesRepository)
+        public MediaFilesService(IRepository<MediaFile> mediaFilesRepository, IRepository<Tag> tagsRepository)
         {
             this.mediaFilesRepository = mediaFilesRepository;
+            this.tagsRepository = tagsRepository;
         }
 
-        public async Task<MediaFile> CreateMediaFile(CreateMediaFileInputModel input, string userId)
+        public async Task CreateMediaFile(CreateMediaFileInputModel input, string userId)
         {
             string directory = $"{input.RootPath}/mediaFiles/{userId}";
 
@@ -30,7 +32,9 @@
                 Extension = input.Extension,
                 UploaderId = userId,
                 CreatedOn = DateTime.UtcNow,
+                IsDeleted = false,
             };
+
             mediaFile.FilePath = $"{directory}/{mediaFile.Id}.{input.Extension}";
 
             await using Stream fileStream = new FileStream(mediaFile.FilePath, FileMode.Create);
@@ -38,74 +42,46 @@
 
             await this.mediaFilesRepository.AddAsync(mediaFile);
             await this.mediaFilesRepository.SaveChangesAsync();
-
-            return mediaFile;
         }
 
-        public async Task AddPostToMediaFile(MediaFile mediaFile, Post post)
+        public async Task SetMediaFileAsDeleted(string mediaFileId)
         {
-            mediaFile.Posts.Add(post);
+            MediaFile mediaFile = this.GetByIdWithTracking<MediaFile>(mediaFileId);
+
+            mediaFile.IsDeleted = true;
 
             await this.mediaFilesRepository.SaveChangesAsync();
+
+            await this.CheckIfMediaFileCanBeDeletedFromStorage(mediaFileId);
         }
 
-        public async Task AddCommentToMediaFile(MediaFile mediaFile, Comment comment)
+        public async Task CheckIfMediaFileCanBeDeletedFromStorage(string mediaFileId)
         {
-            mediaFile.Comments.Add(comment);
+            MediaFile mediaFile = this.GetByIdWithTracking<MediaFile>(mediaFileId);
 
-            await this.mediaFilesRepository.SaveChangesAsync();
-        }
-
-        public async Task AddCollectionToMediaFile(MediaFile mediaFile, Collection collection)
-        {
-            mediaFile.Collections.Add(collection);
-
-            await this.mediaFilesRepository.SaveChangesAsync();
-        }
-
-        public async Task RemoveCommentFromMediaFile(string mediaFileId, Comment comment)
-        {
-            MediaFile mediaFile = this.GetById<MediaFile>(mediaFileId);
-
-            mediaFile.Comments.Remove(comment);
-
-            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any() && !mediaFile.Collections.Any())
+            if (mediaFile.IsDeleted && !mediaFile.Posts.Any() && !mediaFile.Comments.Any() && !mediaFile.Collections.Any())
             {
                 File.Delete(mediaFile.FilePath);
+
+                foreach (var mediaFileTag in mediaFile.Tags)
+                {
+                    Tag tag = this.tagsRepository.All().FirstOrDefault(x => x.Equals(mediaFileTag));
+
+                    tag.MediaFiles.Remove(mediaFile);
+
+                    mediaFile.Tags.Remove(mediaFileTag);
+
+                    await this.tagsRepository.SaveChangesAsync();
+                }
+
+                this.mediaFilesRepository.Delete(mediaFile);
             }
 
             await this.mediaFilesRepository.SaveChangesAsync();
+            await this.tagsRepository.SaveChangesAsync();
         }
 
-        public async Task RemovePostFromMediaFile(string mediaFileId, Post post)
-        {
-            MediaFile mediaFile = this.GetById<MediaFile>(mediaFileId);
-
-            mediaFile.Posts.Remove(post);
-
-            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any() && !mediaFile.Collections.Any())
-            {
-                File.Delete(mediaFile.FilePath);
-            }
-
-            await this.mediaFilesRepository.SaveChangesAsync();
-        }
-
-        public async Task RemoveCollectionFromMediaFile(string mediaFileId, Collection collection)
-        {
-            MediaFile mediaFile = this.GetById<MediaFile>(mediaFileId);
-
-            mediaFile.Collections.Remove(collection);
-
-            if (!mediaFile.Posts.Any() && !mediaFile.Comments.Any() && !mediaFile.Collections.Any())
-            {
-                File.Delete(mediaFile.FilePath);
-            }
-
-            await this.mediaFilesRepository.SaveChangesAsync();
-        }
-
-        public T GetById<T>(string mediaFileId) =>
+        public T GetByIdWithTracking<T>(string mediaFileId) =>
             this.mediaFilesRepository
                 .All()
                 .Where(m => m.Id == mediaFileId)
