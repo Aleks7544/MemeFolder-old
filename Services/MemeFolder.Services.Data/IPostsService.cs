@@ -12,11 +12,11 @@
 
     public interface IPostsService
     {
-        Task<string> CreatePostAsync(CreatePostInputModel input, string userId, string rootPath);
+        Task<Post> CreatePostAsync(CreatePostInputModel input, string userId, string rootPath);
 
-        Task<string> RepostPostAsync(CreatePostInputModel input, string userId, string postId, string rootPath);
+        Task RepostPostAsync(CreatePostInputModel input, string userId, string postId, string rootPath);
 
-        Task<string> EditPostAsync(string id, EditPostInputModel input, string rootPath);
+        Task EditPostAsync(string id, EditPostInputModel input, string rootPath);
 
         Task DeletePostAsync(string postId);
 
@@ -24,20 +24,24 @@
 
         IEnumerable<T> GetAllNew<T>(int page, int itemsPerPage = 25);
 
-        IEnumerable<T> GetAllPopularPostWithTags<T>(int page, IEnumerable<string> tagsIds, int itemsPerPage = 25);
+        IEnumerable<T> GetAllPopularPostWithTags<T>(int page, ICollection<Tag> tags, int itemsPerPage = 25);
 
-        IEnumerable<T> GetAllNewWithTags<T>(int page, IEnumerable<string> tagsIds, int itemsPerPage = 25);
+        IEnumerable<T> GetAllNewWithTags<T>(int page, ICollection<Tag> tags, int itemsPerPage = 25);
 
-        T GetById<T>(string postId);
+        T GetByIdWithTracking<T>(string postId);
 
         Task LikePost(string postId, string userId, ReactionType reaction);
 
         Task UpdateLike(string postId, string userId, ReactionType reaction);
 
-        Task PostComment(BaseCommentInputModel input, string postId, string userId, string rootPath);
+        Task PostComment(Comment comment, string postId, string userId, string rootPath);
 
-        Task AddMediaFilesToPost(IEnumerable<IFormFile> mediaFiles, string userId, string rootPath, Post post);
+        Task RemoveMediaFilesFromPost(ICollection<MediaFile> mediaFiles, Post post);
 
-        void AddTagsToPost(IEnumerable<CreateTagInputModel> tags, Post post);
+        Task AddMediaFilesToPost(ICollection<MediaFile> mediaFiles, Post post);
+
+        Task RemoveTagsFromPost(ICollection<Tag> tags, Post post);
+
+        Task AddTagsToPost(ICollection<Tag> tags, Post post);
     }
 }

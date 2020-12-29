@@ -15,6 +15,8 @@
         private readonly IRepository<MediaFile> mediaFilesRepository;
         private readonly IRepository<Tag> tagsRepository;
 
+        private readonly string[] allowedExtensions = new[] { "jpg", "png", "jpeg", "gif", "mp3", "wav", "ogg", "mp4" };
+
         public MediaFilesService(IRepository<MediaFile> mediaFilesRepository, IRepository<Tag> tagsRepository)
         {
             this.mediaFilesRepository = mediaFilesRepository;
@@ -23,6 +25,13 @@
 
         public async Task CreateMediaFile(CreateMediaFileInputModel input, string userId)
         {
+            string extension = Path.GetExtension(input.MediaFile.FileName).TrimStart('.');
+
+            if (!this.allowedExtensions.Any(x => extension.EndsWith(x)))
+            {
+                throw new Exception($"Invalid or unsupported file extension {extension}");
+            }
+
             string directory = $"{input.RootPath}/mediaFiles/{userId}";
 
             Directory.CreateDirectory(directory);

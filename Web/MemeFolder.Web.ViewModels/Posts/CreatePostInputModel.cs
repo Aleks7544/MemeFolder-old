@@ -2,13 +2,13 @@
 {
     using System.Collections.Generic;
 
+    using MemeFolder.Data.Models;
     using MemeFolder.Web.ViewModels.Tags;
-    using Microsoft.AspNetCore.Http;
 
     public class CreatePostInputModel : BasePostInputModel
     {
-        public IEnumerable<IFormFile> MediaFiles { get; set; }
+        public ICollection<MediaFile> MediaFiles { get; set; }
 
-        public IEnumerable<CreateTagInputModel> Tags { get; set; }
+        public ICollection<Tag> Tags { get; set; }
     }
 }
